@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dotazník nového zaměstnance</title>
+<style>
+  :root{--c1:#1a5fb4;--c2:#e8f0fb;--err:#c01c28;--ok:#26a269;--bd:#d5dbe3;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+  body{background:#f4f6f9;color:#222;font-size:16px;padding-bottom:60px}
+  .wrap{max-width:640px;margin:0 auto;padding:12px}
+  header{background:var(--c1);color:#fff;padding:16px 12px;text-align:center}
+  header h1{font-size:1.25rem;font-weight:600}
+  header p{font-size:.85rem;opacity:.85;margin-top:4px}
+  .lang{display:flex;gap:8px;justify-content:center;margin-top:10px}
+  .lang button{border:1px solid #fff;background:transparent;color:#fff;border-radius:20px;padding:4px 14px;font-size:.85rem;cursor:pointer}
+  .lang button.on{background:#fff;color:var(--c1);font-weight:600}
+  section{background:#fff;border:1px solid var(--bd);border-radius:10px;margin-top:14px;padding:16px}
+  section h2{font-size:1rem;color:var(--c1);margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--c2)}
+  label{display:block;font-size:.85rem;font-weight:600;margin:12px 0 4px}
+  label .req{color:var(--err)}
+  input[type=text],input[type=date],input[type=email],input[type=tel],select,textarea{
+    width:100%;padding:11px;border:1px solid var(--bd);border-radius:8px;font-size:1rem;background:#fff}
+  input:focus,select:focus{outline:2px solid var(--c1);border-color:var(--c1)}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  .radio-g{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .radio-g label{flex:1 1 auto;min-width:90px;border:1px solid var(--bd);border-radius:8px;padding:10px;text-align:center;font-weight:500;cursor:pointer;margin:0}
+  .radio-g input{display:none}
+  .radio-g label:has(input:checked){background:var(--c2);border-color:var(--c1);color:var(--c1);font-weight:700}
+  .hint{font-size:.78rem;color:#666;margin-top:3px}
+  .hidden{display:none!important}
+  .err-msg{color:var(--err);font-size:.8rem;margin-top:3px;display:none}
+  .invalid{border-color:var(--err)!important}
+  .file-box{border:2px dashed var(--bd);border-radius:8px;padding:14px;text-align:center;margin-top:6px;cursor:pointer;font-size:.9rem;color:#555}
+  .file-box.has{border-color:var(--ok);color:var(--ok);border-style:solid}
+  .file-box input{display:none}
+  .child{border:1px solid var(--bd);border-radius:8px;padding:10px;margin-top:10px;position:relative}
+  .child .rm{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--err);font-size:1.1rem;cursor:pointer}
+  .add-btn{margin-top:10px;background:var(--c2);color:var(--c1);border:none;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer}
+  .submit-btn{width:100%;margin-top:18px;background:var(--c1);color:#fff;border:none;border-radius:10px;padding:16px;font-size:1.1rem;font-weight:700;cursor:pointer}
+  .submit-btn:disabled{opacity:.6}
+  .check-l{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:.85rem;margin-top:10px}
+  .check-l input{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+  #okScreen{text-align:center;padding:40px 20px}
+  #okScreen .big{font-size:3rem}
+  .progress{position:sticky;top:0;z-index:5;height:5px;background:#dde3ea}
+  .progress div{height:100%;background:var(--ok);width:0;transition:width .3s}
+</style>
+</head>
+<body>
+<header>
+  <h1 data-i="title">Dotazník nového zaměstnance</h1>
+  <p id="clientName"></p>
+  <div class="lang">
+    <button type="button" data-lang="cs" class="on">Čeština</button>
+    <button type="button" data-lang="uk">Українська</button>
+    <button type="button" data-lang="en">English</button>
+  </div>
+</header>
+<div class="progress"><div id="pbar"></div></div>
+
+<form class="wrap" id="f" novalidate>
+
+<section>
+  <h2 data-i="s_job">1. Nástup do zaměstnání</h2>
+  <label data-i="l_kind">Typ pracovního poměru <span class="req">*</span></label>
+  <div class="radio-g">
+    <label><input type="radio" name="employmentKind" value="HPP" required><span data-i="k_hpp">Pracovní poměr (HPP)</span></label>
+    <label><input type="radio" name="employmentKind" value="DPP"><span>DPP</span></label>
+    <label><input type="radio" name="employmentKind" value="DPC"><span>DPČ</span></label>
+  </div>
+  <div class="row">
+    <div><label data-i="l_startDate">Datum nástupu <span class="req">*</span></label><input type="date" name="startDate" required></div>
+    <div><label data-i="l_position">Pracovní pozice <span class="req">*</span></label><input type="text" name="position" required></div>
+  </div>
+</section>
+
+<section>
+  <h2 data-i="s_person">2. Osobní údaje</h2>
+  <div class="row">
+    <div><label data-i="l_firstName">Jméno <span class="req">*</span></label><input type="text" name="firstName" required autocomplete="given-name"><div class="hint" data-i="h_latin">Přesně podle dokladu totožnosti (latinkou)</div></div>
+    <div><label data-i="l_surname">Příjmení <span class="req">*</span></label><input type="text" name="surname" required autocomplete="family-name"></div>
+  </div>
+  <div class="row">
+    <div><label data-i="l_maidenName">Rodné příjmení</label><input type="text" name="maidenName"></div>
+    <div><label data-i="l_title">Titul</label><input type="text" name="titleBefore"></div>
+  </div>
+  <label data-i="l_sex">Pohlaví <span class="req">*</span></label>
+  <div class="radio-g">
+    <label><input type="radio" name="sex" value="man" required><span data-i="sex_m">Muž</span></label>
+    <label><input type="radio" name="sex" value="woman"><span data-i="sex_f">Žena</span></label>
+  </div>
+  <div class="row">
+    <div><label data-i="l_dob">Datum narození <span class="req">*</span></label><input type="date" name="dateOfBirth" required></div>
+    <div><label data-i="l_pob">Místo narození <span class="req">*</span></label><input type="text" name="placeOfBirth" required></div>
+  </div>
+  <div class="row">
+    <div><label data-i="l_cob">Stát narození <span class="req">*</span></label><select name="countryOfBirth" required></select></div>
+    <div><label data-i="l_citizen">Státní občanství <span class="req">*</span></label><select name="citizenship" required></select></div>
+  </div>
+  <label data-i="l_marital">Rodinný stav <span class="req">*</span></label>
+  <select name="maritalStatus" required>
+    <option value=""></option>
+    <option value="single" data-i="ms_single">svobodný/á</option>
+    <option value="married" data-i="ms_married">ženatý/vdaná</option>
+    <option value="divorced" data-i="ms_divorced">rozvedený/á</option>
+    <option value="widowed" data-i="ms_widowed">vdovec/vdova</option>
+    <option value="partnership" data-i="ms_partner">registrované partnerství</option>
+  </select>
+  <div id="rcBox">
+    <label data-i="l_rc">Rodné číslo <span class="req">*</span></label>
+    <input type="text" name="birthNumber" inputmode="numeric" placeholder="800602/3214">
+    <div class="err-msg" data-i="e_rc">Rodné číslo není platné</div>
+    <div class="hint" data-i="h_rc_foreign">Cizinec: vyplňte, pouze pokud vám bylo rodné číslo v ČR přiděleno</div>
+  </div>
+  <div class="row">
+    <div><label data-i="l_phone">Telefon <span class="req">*</span></label><input type="tel" name="phone" required placeholder="+420 / +380"></div>
+    <div><label data-i="l_email">E-mail <span class="req">*</span></label><input type="email" name="email" required></div>
+  </div>
+  <label data-i="l_edu">Nejvyšší dosažené vzdělání <span class="req">*</span></label>
+  <select name="education" required>
+    <option value=""></option>
+    <option value="zakladni" data-i="edu_1">základní</option>
+    <option value="vyuceni" data-i="edu_2">vyučen / odborné bez maturity</option>
+    <option value="maturita" data-i="edu_3">střední s maturitou</option>
+    <option value="vos" data-i="edu_4">vyšší odborné</option>
+    <option value="vs_bc" data-i="edu_5">vysokoškolské – bakalářské</option>
+    <option value="vs_mgr" data-i="edu_6">vysokoškolské – magisterské a vyšší</option>
+  </select>
+</section>
+
+<section id="docSection">
+  <h2 data-i="s_docs">3. Doklad totožnosti a pobyt</h2>
+  <div id="czDoc">
+    <label data-i="l_op">Číslo občanského průkazu <span class="req">*</span></label>
+    <input type="text" name="idCardNumber">
+  </div>
+  <div id="foreignDoc" class="hidden">
+    <div class="row">
+      <div><label data-i="l_passNo">Číslo cestovního pasu <span class="req">*</span></label><input type="text" name="passportNumber"></div>
+      <div><label data-i="l_passExp">Platnost pasu do <span class="req">*</span></label><input type="date" name="passportExpiry"></div>
+    </div>
+    <label data-i="l_passCountry">Stát vydání pasu <span class="req">*</span></label>
+    <select name="passportCountry"></select>
+    <label data-i="l_resType">Typ oprávnění k pobytu v ČR <span class="req">*</span></label>
+    <select name="residenceType">
+      <option value=""></option>
+      <option value="docasna_ochrana" data-i="rt_do">Dočasná ochrana (UA)</option>
+      <option value="zamestnanecka_karta" data-i="rt_zk">Zaměstnanecká karta</option>
+      <option value="modra_karta" data-i="rt_mk">Modrá karta</option>
+      <option value="dlouhodoby_pobyt" data-i="rt_dp">Dlouhodobý pobyt / vízum nad 90 dnů</option>
+      <option value="trvaly_pobyt" data-i="rt_tp">Trvalý pobyt</option>
+      <option value="eu_obcan" data-i="rt_eu">Občan EU/EHP – bez povolení</option>
+      <option value="jine" data-i="rt_other">Jiné</option>
+    </select>
+    <div class="row">
+      <div><label data-i="l_resNo">Číslo dokladu o pobytu / víza</label><input type="text" name="residenceNumber"></div>
+      <div><label data-i="l_resExp">Platnost pobytu do</label><input type="date" name="residenceExpiry"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 data-i="s_addr">4. Adresy</h2>
+  <label data-i="l_permAddr" style="font-size:.95rem">Trvalé bydliště <span class="req">*</span></label>
+  <div class="hint" data-i="h_permAddr">Cizinci: adresa trvalého bydliště v domovském státě, přesně jak je vedena v dokladech.</div>
+  <label data-i="l_country">Stát <span class="req">*</span></label><select name="permCountry" required></select>
+  <div class="row">
+    <div style="flex:2"><label data-i="l_street">Ulice <span class="req">*</span></label><input type="text" name="permStreet" required></div>
+    <div><label data-i="l_houseNo">Č. domu <span class="req">*</span></label><input type="text" name="permHouseNumber" required></div>
+  </div>
+  <div class="row">
+    <div style="flex:2"><label data-i="l_city">Obec / město <span class="req">*</span></label><input type="text" name="permCity" required></div>
+    <div><label data-i="l_zip">PSČ <span class="req">*</span></label><input type="text" name="permZip" required></div>
+  </div>
+  <div><label data-i="l_region">Oblast / region</label><input type="text" name="permRegion"></div>
+
+  <label class="check-l" style="margin-top:16px"><input type="checkbox" id="czAddrSame" checked><span data-i="l_czSame">Bydliště (kontaktní adresa) v ČR je stejné jako trvalé bydliště</span></label>
+  <div id="czAddrBox" class="hidden">
+    <label data-i="l_czAddr" style="font-size:.95rem;margin-top:14px">Bydliště / kontaktní adresa v ČR <span class="req">*</span></label>
+    <div class="row">
+      <div style="flex:2"><label data-i="l_street">Ulice</label><input type="text" name="czStreet"></div>
+      <div><label data-i="l_houseNo">Č. domu</label><input type="text" name="czHouseNumber"></div>
+    </div>
+    <div class="row">
+      <div style="flex:2"><label data-i="l_city">Obec / město</label><input type="text" name="czCity"></div>
+      <div><label data-i="l_zip">PSČ</label><input type="text" name="czZip"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 data-i="s_ins">5. Zdravotní pojišťovna</h2>
+  <label data-i="l_insComp">Zdravotní pojišťovna v ČR <span class="req">*</span></label>
+  <select name="healthInsurance" required>
+    <option value=""></option>
+    <option value="111">111 – VZP</option>
+    <option value="201">201 – VoZP</option>
+    <option value="205">205 – ČPZP</option>
+    <option value="207">207 – OZP</option>
+    <option value="209">209 – ZP Škoda</option>
+    <option value="211">211 – ZPMV</option>
+    <option value="213">213 – RBP</option>
+    <option value="none" data-i="ins_none">Nejsem zatím pojištěn/a v ČR</option>
+  </select>
+  <label data-i="l_insNo">Číslo pojištěnce (pokud je odlišné od rodného čísla)</label>
+  <input type="text" name="insuranceNumber">
+</section>
+
+<section>
+  <h2 data-i="s_bank">6. Výplata mzdy</h2>
+  <label data-i="l_payMethod">Způsob výplaty <span class="req">*</span></label>
+  <div class="radio-g">
+    <label><input type="radio" name="payMethod" value="account" checked><span data-i="pm_acc">Na účet</span></label>
+    <label><input type="radio" name="payMethod" value="cash"><span data-i="pm_cash">Hotově</span></label>
+  </div>
+  <div id="bankBox">
+    <label data-i="l_accFormat">Formát účtu</label>
+    <div class="radio-g">
+      <label><input type="radio" name="accFormat" value="cz" checked><span data-i="af_cz">Český účet</span></label>
+      <label><input type="radio" name="accFormat" value="iban"><span>IBAN</span></label>
+    </div>
+    <div id="czAcc" class="row">
+      <div style="flex:2"><label data-i="l_accNo">Číslo účtu <span class="req">*</span></label><input type="text" name="accountNumber" inputmode="numeric" placeholder="123456789"></div>
+      <div><label data-i="l_bankCode">Kód banky <span class="req">*</span></label><input type="text" name="bankCode" inputmode="numeric" placeholder="0800" maxlength="4"></div>
+    </div>
+    <div id="ibanAcc" class="hidden">
+      <label>IBAN <span class="req">*</span></label><input type="text" name="iban" placeholder="CZ65 0800 0000 0019 2000 0145">
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 data-i="s_tax">7. Daně a prohlášení</h2>
+  <label class="check-l"><input type="checkbox" name="taxDeclaration"><span data-i="l_taxDecl">Chci u tohoto zaměstnavatele podepsat Prohlášení poplatníka („růžové prohlášení“) a uplatňovat slevu na poplatníka</span></label>
+  <div class="hint" data-i="h_taxDecl">Prohlášení lze mít podepsané pouze u jednoho zaměstnavatele současně.</div>
+  <label class="check-l"><input type="checkbox" name="isStudent"><span data-i="l_student">Jsem student/ka (do 26 let)</span></label>
+  <label class="check-l"><input type="checkbox" name="isPensioner"><span data-i="l_pensioner">Pobírám důchod (starobní/invalidní)</span></label>
+  <label class="check-l"><input type="checkbox" name="isZTP"><span data-i="l_ztp">Jsem držitel/ka průkazu ZTP/P</span></label>
+  <label class="check-l"><input type="checkbox" name="hasExecution"><span data-i="l_exec">Mám exekuci / insolvenci (srážky ze mzdy)</span></label>
+  <label class="check-l"><input type="checkbox" name="otherEmployer"><span data-i="l_otherEmp">Mám současně jiného zaměstnavatele</span></label>
+
+  <label data-i="l_children" style="margin-top:16px">Děti pro daňové zvýhodnění</label>
+  <div class="hint" data-i="h_children">Vyplňte, pouze pokud budete uplatňovat daňové zvýhodnění na děti (jen s podepsaným Prohlášením).</div>
+  <div id="children"></div>
+  <button type="button" class="add-btn" id="addChild" data-i="b_addChild">+ Přidat dítě</button>
+</section>
+
+<section>
+  <h2 data-i="s_prev">8. Předchozí zaměstnání</h2>
+  <label data-i="l_prevEmp">Poslední zaměstnavatel / činnost před nástupem</label>
+  <input type="text" name="previousEmployer">
+  <label data-i="l_prevState">Před nástupem jsem byl/a</label>
+  <select name="previousState">
+    <option value=""></option>
+    <option value="zamestnanec" data-i="ps_emp">zaměstnán/a</option>
+    <option value="osvc" data-i="ps_osvc">OSVČ</option>
+    <option value="up" data-i="ps_up">v evidenci úřadu práce</option>
+    <option value="student" data-i="ps_student">student/ka</option>
+    <option value="zahranici" data-i="ps_abroad">v zahraničí</option>
+    <option value="jine" data-i="ps_other">jiné</option>
+  </select>
+</section>
+
+<section>
+  <h2 data-i="s_files">9. Přílohy – fotografie dokladů</h2>
+  <div class="hint" data-i="h_files">Vyfoťte doklady mobilem – čitelně, celý doklad, bez odlesků. Max. 5 MB na soubor.</div>
+  <label data-i="l_fileId">Občanský průkaz / cestovní pas (přední strana) <span class="req">*</span></label>
+  <label class="file-box" id="fb1"><input type="file" name="file_id" accept="image/*,.pdf"><span data-i="fb_tap">📷 Klepněte pro vyfocení / nahrání</span></label>
+  <label data-i="l_fileId2">Zadní strana dokladu</label>
+  <label class="file-box" id="fb2"><input type="file" name="file_id2" accept="image/*,.pdf"><span data-i="fb_tap">📷 Klepněte pro vyfocení / nahrání</span></label>
+  <div id="foreignFiles" class="hidden">
+    <label data-i="l_fileRes">Doklad o pobytu / vízum / štítek dočasné ochrany <span class="req">*</span></label>
+    <label class="file-box" id="fb3"><input type="file" name="file_residence" accept="image/*,.pdf"><span data-i="fb_tap">📷 Klepněte pro vyfocení / nahrání</span></label>
+  </div>
+  <label data-i="l_fileIns">Kartička zdravotní pojišťovny</label>
+  <label class="file-box" id="fb4"><input type="file" name="file_insurance" accept="image/*,.pdf"><span data-i="fb_tap">📷 Klepněte pro vyfocení / nahrání</span></label>
+  <label data-i="l_fileOther">Jiné (potvrzení o studiu, rozhodnutí o důchodu…)</label>
+  <label class="file-box" id="fb5"><input type="file" name="file_other" accept="image/*,.pdf" multiple><span data-i="fb_tap">📷 Klepněte pro vyfocení / nahrání</span></label>
+</section>
+
+<section>
+  <h2 data-i="s_consent">10. Prohlášení a souhlas</h2>
+  <label class="check-l"><input type="checkbox" id="truthful" required><span data-i="l_truthful">Prohlašuji, že všechny uvedené údaje jsou pravdivé a úplné. Změny neprodleně oznámím zaměstnavateli.</span></label>
+  <label class="check-l"><input type="checkbox" id="gdpr" required><span data-i="l_gdpr">Beru na vědomí, že osobní údaje budou zpracovány pro účely vzniku pracovněprávního vztahu, mzdové a personální agendy a plnění zákonných povinností zaměstnavatele (registrace u ČSSZ, zdravotní pojišťovny, úřadu práce) dle čl. 6 odst. 1 písm. b) a c) GDPR.</span></label>
+  <label data-i="l_note">Poznámka / vzkaz pro mzdovou účetní</label>
+  <textarea name="note" rows="3"></textarea>
+  <button type="submit" class="submit-btn" id="sbtn" data-i="b_submit">Odeslat dotazník</button>
+  <div class="err-msg" id="formErr" style="text-align:center;margin-top:10px" data-i="e_form">Zkontrolujte prosím zvýrazněná pole.</div>
+</section>
+</form>
+
+<div class="wrap hidden" id="okScreen">
+  <section>
+    <div class="big">✅</div>
+    <h2 data-i="ok_title" style="border:none">Dotazník byl odeslán</h2>
+    <p data-i="ok_text" style="margin-top:10px;font-size:.95rem">Děkujeme. Mzdová účetní vaše údaje zpracuje a v případě potřeby vás bude kontaktovat.</p>
+  </section>
+</div>
+
+<script>
+/* ===== KONFIGURACE ===== */
+const CONFIG = {
+  // Po nasazení Google Apps Scriptu sem vložte URL webové aplikace (končí /exec).
+  // Pokud zůstane prázdné, formulář nabídne stažení dat jako soubor.
+  scriptUrl: "https://script.google.com/macros/s/AKfycbyfU92nfOpWjFaT87fbxHBTJM3kmdCQNhU44S_4czXKSCHdkM_kg6rzH_LFpzqzZkNW/exec",
+  maxFileMB: 5
+};
+
+/* ===== PŘEKLADY ===== */
+const I18N = {
+cs:{title:"Dotazník nového zaměstnance",s_job:"1. Nástup do zaměstnání",l_kind:"Typ pracovního poměru *",k_hpp:"Pracovní poměr (HPP)",l_startDate:"Datum nástupu *",l_position:"Pracovní pozice *",
+s_person:"2. Osobní údaje",l_firstName:"Jméno *",h_latin:"Přesně podle dokladu totožnosti (latinkou)",l_surname:"Příjmení *",l_maidenName:"Rodné příjmení",l_title:"Titul",l_sex:"Pohlaví *",sex_m:"Muž",sex_f:"Žena",l_dob:"Datum narození *",l_pob:"Místo narození *",l_cob:"Stát narození *",l_citizen:"Státní občanství *",l_marital:"Rodinný stav *",ms_single:"svobodný/á",ms_married:"ženatý/vdaná",ms_divorced:"rozvedený/á",ms_widowed:"vdovec/vdova",ms_partner:"registrované partnerství",l_rc:"Rodné číslo *",e_rc:"Rodné číslo není platné",h_rc_foreign:"Cizinec: vyplňte, pouze pokud vám bylo rodné číslo v ČR přiděleno",l_phone:"Telefon *",l_email:"E-mail *",l_edu:"Nejvyšší dosažené vzdělání *",edu_1:"základní",edu_2:"vyučen / odborné bez maturity",edu_3:"střední s maturitou",edu_4:"vyšší odborné",edu_5:"vysokoškolské – bakalářské",edu_6:"vysokoškolské – magisterské a vyšší",
+s_docs:"3. Doklad totožnosti a pobyt",l_op:"Číslo občanského průkazu *",l_passNo:"Číslo cestovního pasu *",l_passExp:"Platnost pasu do *",l_passCountry:"Stát vydání pasu *",l_resType:"Typ oprávnění k pobytu v ČR *",rt_do:"Dočasná ochrana (UA)",rt_zk:"Zaměstnanecká karta",rt_mk:"Modrá karta",rt_dp:"Dlouhodobý pobyt / vízum nad 90 dnů",rt_tp:"Trvalý pobyt",rt_eu:"Občan EU/EHP – bez povolení",rt_other:"Jiné",l_resNo:"Číslo dokladu o pobytu / víza",l_resExp:"Platnost pobytu do",
+s_addr:"4. Adresy",l_permAddr:"Trvalé bydliště *",h_permAddr:"Cizinci: adresa trvalého bydliště v domovském státě, přesně jak je vedena v dokladech.",l_country:"Stát *",l_street:"Ulice",l_houseNo:"Č. domu",l_city:"Obec / město",l_zip:"PSČ",l_region:"Oblast / region",l_czSame:"Bydliště (kontaktní adresa) v ČR je stejné jako trvalé bydliště",l_czAddr:"Bydliště / kontaktní adresa v ČR *",
+s_ins:"5. Zdravotní pojišťovna",l_insComp:"Zdravotní pojišťovna v ČR *",ins_none:"Nejsem zatím pojištěn/a v ČR",l_insNo:"Číslo pojištěnce (pokud je odlišné od rodného čísla)",
+s_bank:"6. Výplata mzdy",l_payMethod:"Způsob výplaty *",pm_acc:"Na účet",pm_cash:"Hotově",l_accFormat:"Formát účtu",af_cz:"Český účet",l_accNo:"Číslo účtu *",l_bankCode:"Kód banky *",
+s_tax:"7. Daně a prohlášení",l_taxDecl:"Chci u tohoto zaměstnavatele podepsat Prohlášení poplatníka („růžové prohlášení“) a uplatňovat slevu na poplatníka",h_taxDecl:"Prohlášení lze mít podepsané pouze u jednoho zaměstnavatele současně.",l_student:"Jsem student/ka (do 26 let)",l_pensioner:"Pobírám důchod (starobní/invalidní)",l_ztp:"Jsem držitel/ka průkazu ZTP/P",l_exec:"Mám exekuci / insolvenci (srážky ze mzdy)",l_otherEmp:"Mám současně jiného zaměstnavatele",l_children:"Děti pro daňové zvýhodnění",h_children:"Vyplňte, pouze pokud budete uplatňovat daňové zvýhodnění na děti (jen s podepsaným Prohlášením).",b_addChild:"+ Přidat dítě",c_name:"Jméno a příjmení dítěte",c_rc:"Rodné číslo / datum narození",
+s_prev:"8. Předchozí zaměstnání",l_prevEmp:"Poslední zaměstnavatel / činnost před nástupem",l_prevState:"Před nástupem jsem byl/a",ps_emp:"zaměstnán/a",ps_osvc:"OSVČ",ps_up:"v evidenci úřadu práce",ps_student:"student/ka",ps_abroad:"v zahraničí",ps_other:"jiné",
+s_files:"9. Přílohy – fotografie dokladů",h_files:"Vyfoťte doklady mobilem – čitelně, celý doklad, bez odlesků. Max. 5 MB na soubor.",l_fileId:"Občanský průkaz / cestovní pas (přední strana) *",l_fileId2:"Zadní strana dokladu",l_fileRes:"Doklad o pobytu / vízum / štítek dočasné ochrany *",l_fileIns:"Kartička zdravotní pojišťovny",l_fileOther:"Jiné (potvrzení o studiu, rozhodnutí o důchodu…)",fb_tap:"📷 Klepněte pro vyfocení / nahrání",
+s_consent:"10. Prohlášení a souhlas",l_truthful:"Prohlašuji, že všechny uvedené údaje jsou pravdivé a úplné. Změny neprodleně oznámím zaměstnavateli.",l_gdpr:"Beru na vědomí, že osobní údaje budou zpracovány pro účely vzniku pracovněprávního vztahu, mzdové a personální agendy a plnění zákonných povinností zaměstnavatele (registrace u ČSSZ, zdravotní pojišťovny, úřadu práce) dle čl. 6 odst. 1 písm. b) a c) GDPR.",l_note:"Poznámka / vzkaz pro mzdovou účetní",b_submit:"Odeslat dotazník",e_form:"Zkontrolujte prosím zvýrazněná pole.",b_sending:"Odesílám…",
+ok_title:"Dotazník byl odeslán",ok_text:"Děkujeme. Mzdová účetní vaše údaje zpracuje a v případě potřeby vás bude kontaktovat.",e_file:"Soubor je příliš velký (max. 5 MB)",dl_info:"Odeslání na server není nastaveno. Stáhl se soubor s daty – pošlete jej prosím e-mailem mzdové účetní."},
+uk:{title:"Анкета нового працівника",s_job:"1. Початок роботи",l_kind:"Тип трудових відносин *",k_hpp:"Трудовий договір (HPP)",l_startDate:"Дата початку роботи *",l_position:"Посада *",
+s_person:"2. Особисті дані",l_firstName:"Ім'я *",h_latin:"Точно як у документі (латиницею, як у паспорті)",l_surname:"Прізвище *",l_maidenName:"Дівоче прізвище",l_title:"Титул",l_sex:"Стать *",sex_m:"Чоловік",sex_f:"Жінка",l_dob:"Дата народження *",l_pob:"Місце народження *",l_cob:"Країна народження *",l_citizen:"Громадянство *",l_marital:"Сімейний стан *",ms_single:"неодружений/незаміжня",ms_married:"одружений/заміжня",ms_divorced:"розлучений/а",ms_widowed:"вдівець/вдова",ms_partner:"зареєстроване партнерство",l_rc:"Rodné číslo (чеський особистий номер) *",e_rc:"Rodné číslo недійсне",h_rc_foreign:"Іноземці: заповніть лише якщо вам було присвоєно rodné číslo в Чехії",l_phone:"Телефон *",l_email:"Ел. пошта *",l_edu:"Найвища освіта *",edu_1:"початкова",edu_2:"професійна без атестата",edu_3:"середня з атестатом",edu_4:"вища професійна",edu_5:"бакалавр",edu_6:"магістр і вище",
+s_docs:"3. Документ та дозвіл на перебування",l_op:"Номер посвідчення особи *",l_passNo:"Номер закордонного паспорта *",l_passExp:"Паспорт дійсний до *",l_passCountry:"Країна видачі паспорта *",l_resType:"Тип дозволу на перебування в ЧР *",rt_do:"Тимчасовий захист (UA)",rt_zk:"Карта працівника (zaměstnanecká karta)",rt_mk:"Блакитна карта",rt_dp:"Довгострокове перебування / віза понад 90 днів",rt_tp:"Постійне проживання",rt_eu:"Громадянин ЄС – без дозволу",rt_other:"Інше",l_resNo:"Номер документа про перебування / візи",l_resExp:"Дозвіл дійсний до",
+s_addr:"4. Адреси",l_permAddr:"Постійне місце проживання *",h_permAddr:"Іноземці: адреса постійного проживання у вашій країні, точно як у документах.",l_country:"Країна *",l_street:"Вулиця",l_houseNo:"№ буд.",l_city:"Місто / село",l_zip:"Індекс",l_region:"Область / регіон",l_czSame:"Адреса проживання в ЧР збігається з постійною адресою",l_czAddr:"Адреса проживання в ЧР *",
+s_ins:"5. Медичне страхування",l_insComp:"Медична страхова компанія в ЧР *",ins_none:"Ще не застрахований/а в ЧР",l_insNo:"Номер застрахованої особи (якщо відрізняється від rodné číslo)",
+s_bank:"6. Виплата зарплати",l_payMethod:"Спосіб виплати *",pm_acc:"На рахунок",pm_cash:"Готівкою",l_accFormat:"Формат рахунку",af_cz:"Чеський рахунок",l_accNo:"Номер рахунку *",l_bankCode:"Код банку *",
+s_tax:"7. Податки та декларація",l_taxDecl:"Хочу підписати у цього роботодавця Податкову декларацію платника («рожеву декларацію») та застосовувати знижку на платника податку",h_taxDecl:"Декларацію можна мати підписаною лише в одного роботодавця одночасно.",l_student:"Я студент/ка (до 26 років)",l_pensioner:"Отримую пенсію",l_ztp:"Маю посвідчення ZTP/P",l_exec:"Маю виконавче провадження / банкрутство (утримання із зарплати)",l_otherEmp:"Одночасно маю іншого роботодавця",l_children:"Діти для податкової пільги",h_children:"Заповніть лише якщо будете застосовувати податкову пільгу на дітей (лише з підписаною Декларацією).",b_addChild:"+ Додати дитину",c_name:"Ім'я та прізвище дитини",c_rc:"Rodné číslo / дата народження",
+s_prev:"8. Попередня зайнятість",l_prevEmp:"Останній роботодавець / діяльність перед працевлаштуванням",l_prevState:"Перед працевлаштуванням я був/була",ps_emp:"працевлаштований/а",ps_osvc:"підприємець (OSVČ)",ps_up:"на обліку в центрі зайнятості",ps_student:"студент/ка",ps_abroad:"за кордоном",ps_other:"інше",
+s_files:"9. Додатки – фото документів",h_files:"Сфотографуйте документи телефоном – чітко, весь документ, без відблисків. Макс. 5 МБ на файл.",l_fileId:"Посвідчення особи / паспорт (лицьова сторона) *",l_fileId2:"Зворотна сторона документа",l_fileRes:"Документ про перебування / віза / штамп тимчасового захисту *",l_fileIns:"Картка медичного страхування",l_fileOther:"Інше (довідка про навчання, рішення про пенсію…)",fb_tap:"📷 Натисніть, щоб сфотографувати / завантажити",
+s_consent:"10. Заява та згода",l_truthful:"Заявляю, що всі наведені дані є правдивими та повними. Про зміни негайно повідомлю роботодавця.",l_gdpr:"Приймаю до відома, що персональні дані будуть оброблені для цілей виникнення трудових відносин, кадрового та зарплатного обліку та виконання законних обов'язків роботодавця (реєстрація в ČSSZ, медичній страховій, центрі зайнятості) згідно зі ст. 6 п. 1 b) і c) GDPR.",l_note:"Примітка / повідомлення для бухгалтера",b_submit:"Надіслати анкету",e_form:"Будь ласка, перевірте виділені поля.",b_sending:"Надсилаю…",
+ok_title:"Анкету надіслано",ok_text:"Дякуємо. Бухгалтер обробить ваші дані та за потреби зв'яжеться з вами.",e_file:"Файл занадто великий (макс. 5 МБ)",dl_info:"Надсилання на сервер не налаштовано. Файл з даними завантажено – надішліть його, будь ласка, електронною поштою бухгалтеру."},
+en:{title:"New Employee Questionnaire",s_job:"1. Employment start",l_kind:"Type of employment *",k_hpp:"Employment contract (HPP)",l_startDate:"Start date *",l_position:"Job position *",
+s_person:"2. Personal details",l_firstName:"First name *",h_latin:"Exactly as in your ID document (Latin script)",l_surname:"Surname *",l_maidenName:"Birth surname",l_title:"Title",l_sex:"Sex *",sex_m:"Male",sex_f:"Female",l_dob:"Date of birth *",l_pob:"Place of birth *",l_cob:"Country of birth *",l_citizen:"Citizenship *",l_marital:"Marital status *",ms_single:"single",ms_married:"married",ms_divorced:"divorced",ms_widowed:"widowed",ms_partner:"registered partnership",l_rc:"Czech birth number (rodné číslo) *",e_rc:"Birth number is not valid",h_rc_foreign:"Foreigners: fill in only if a Czech birth number has been assigned to you",l_phone:"Phone *",l_email:"E-mail *",l_edu:"Highest education *",edu_1:"primary",edu_2:"vocational without diploma",edu_3:"secondary with diploma",edu_4:"higher vocational",edu_5:"university – bachelor",edu_6:"university – master and higher",
+s_docs:"3. Identity document & residence",l_op:"ID card number *",l_passNo:"Passport number *",l_passExp:"Passport valid until *",l_passCountry:"Passport issuing country *",l_resType:"Type of residence permit in CZ *",rt_do:"Temporary protection (UA)",rt_zk:"Employee card",rt_mk:"Blue card",rt_dp:"Long-term residence / visa over 90 days",rt_tp:"Permanent residence",rt_eu:"EU/EEA citizen – no permit needed",rt_other:"Other",l_resNo:"Residence permit / visa number",l_resExp:"Residence valid until",
+s_addr:"4. Addresses",l_permAddr:"Permanent address *",h_permAddr:"Foreigners: permanent address in your home country, exactly as stated in your documents.",l_country:"Country *",l_street:"Street",l_houseNo:"No.",l_city:"City / town",l_zip:"ZIP",l_region:"Region",l_czSame:"My address in CZ is the same as my permanent address",l_czAddr:"Address / contact address in CZ *",
+s_ins:"5. Health insurance",l_insComp:"Health insurance company in CZ *",ins_none:"Not yet insured in CZ",l_insNo:"Insured person number (if different from birth number)",
+s_bank:"6. Salary payment",l_payMethod:"Payment method *",pm_acc:"Bank account",pm_cash:"Cash",l_accFormat:"Account format",af_cz:"Czech account",l_accNo:"Account number *",l_bankCode:"Bank code *",
+s_tax:"7. Taxes & declaration",l_taxDecl:"I want to sign the Taxpayer's Declaration (\"pink declaration\") with this employer and claim the basic taxpayer relief",h_taxDecl:"The declaration may be signed with only one employer at a time.",l_student:"I am a student (under 26)",l_pensioner:"I receive a pension",l_ztp:"I hold a ZTP/P card",l_exec:"I have wage garnishment / insolvency",l_otherEmp:"I currently have another employer",l_children:"Children for tax credit",h_children:"Fill in only if you will claim the child tax credit (only with a signed Declaration).",b_addChild:"+ Add child",c_name:"Child's full name",c_rc:"Birth number / date of birth",
+s_prev:"8. Previous employment",l_prevEmp:"Last employer / activity before joining",l_prevState:"Before joining I was",ps_emp:"employed",ps_osvc:"self-employed",ps_up:"registered at the labour office",ps_student:"a student",ps_abroad:"abroad",ps_other:"other",
+s_files:"9. Attachments – photos of documents",h_files:"Photograph documents with your phone – legible, whole document, no glare. Max 5 MB per file.",l_fileId:"ID card / passport (front) *",l_fileId2:"Back side of the document",l_fileRes:"Residence permit / visa / temporary protection sticker *",l_fileIns:"Health insurance card",l_fileOther:"Other (study certificate, pension decision…)",fb_tap:"📷 Tap to take a photo / upload",
+s_consent:"10. Declaration & consent",l_truthful:"I declare that all information provided is true and complete. I will report any changes to my employer without delay.",l_gdpr:"I acknowledge that my personal data will be processed for the purposes of establishing the employment relationship, payroll and HR administration and the employer's legal obligations (registration with ČSSZ, health insurance company, labour office) under Art. 6(1)(b) and (c) GDPR.",l_note:"Note / message for the payroll accountant",b_submit:"Submit questionnaire",e_form:"Please check the highlighted fields.",b_sending:"Sending…",
+ok_title:"Questionnaire submitted",ok_text:"Thank you. The payroll accountant will process your data and contact you if needed.",e_file:"File is too large (max 5 MB)",dl_info:"Server submission is not configured. A data file was downloaded – please e-mail it to the payroll accountant."}
+};
+
+/* ===== STÁTY ===== */
+const COUNTRIES=[["CZ","Česko / Czechia"],["UA","Україна / Ukraine"],["SK","Slovensko / Slovakia"],["PL","Polska / Poland"],["RO","România / Romania"],["BG","България / Bulgaria"],["MD","Moldova"],["HU","Magyarország / Hungary"],["DE","Deutschland / Germany"],["AT","Österreich / Austria"],["BY","Беларусь / Belarus"],["RU","Россия / Russia"],["KZ","Қазақстан / Kazakhstan"],["UZ","Oʻzbekiston / Uzbekistan"],["GE","საქართველო / Georgia"],["AM","Հայաստան / Armenia"],["VN","Việt Nam / Vietnam"],["MN","Монгол / Mongolia"],["RS","Srbija / Serbia"],["MK","Македонија / N. Macedonia"],["IN","India"],["PH","Philippines"],["OTHER","— jiný / інша / other —"]];
+
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+let lang="cs";
+
+function applyLang(l){
+  lang=l;document.documentElement.lang=l;
+  $$("[data-lang]").forEach(b=>b.classList.toggle("on",b.dataset.lang===l));
+  $$("[data-i]").forEach(el=>{const t=I18N[l][el.dataset.i];if(t)el.innerHTML=t.replace(/\*/g,'<span class="req">*</span>');});
+}
+$$(".lang button").forEach(b=>b.onclick=()=>applyLang(b.dataset.lang));
+
+/* stát selecty */
+["countryOfBirth","citizenship","passportCountry","permCountry"].forEach(n=>{
+  const s=document.querySelector(`[name=${n}]`);if(!s)return;
+  s.innerHTML='<option value=""></option>'+COUNTRIES.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join("");
+});
+document.querySelector("[name=permCountry]").value="CZ";
+
+/* klient z URL: ?klient=Nazev */
+const urlP=new URLSearchParams(location.search);
+const klient=urlP.get("klient")||urlP.get("firma")||"";
+if(klient)$("#clientName").textContent=klient;
+
+/* občanství → přepínání sekcí */
+const citizenSel=document.querySelector("[name=citizenship]");
+function updateForeign(){
+  const cz=citizenSel.value==="CZ";
+  $("#czDoc").classList.toggle("hidden",!cz);
+  $("#foreignDoc").classList.toggle("hidden",cz);
+  $("#foreignFiles").classList.toggle("hidden",cz);
+  document.querySelector("[name=idCardNumber]").required=cz;
+  ["passportNumber","passportExpiry","passportCountry","residenceType"].forEach(n=>document.querySelector(`[name=${n}]`).required=!cz&&citizenSel.value!=="");
+  document.querySelector("[name=birthNumber]").required=cz;
+}
+citizenSel.onchange=updateForeign;
+
+/* CZ adresa toggle */
+$("#czAddrSame").onchange=e=>{
+  $("#czAddrBox").classList.toggle("hidden",e.target.checked);
+  ["czStreet","czHouseNumber","czCity","czZip"].forEach(n=>document.querySelector(`[name=${n}]`).required=!e.target.checked);
+};
+
+/* výplata */
+$$("[name=payMethod]").forEach(r=>r.onchange=()=>{$("#bankBox").classList.toggle("hidden",document.querySelector("[name=payMethod]:checked").value!=="account");});
+$$("[name=accFormat]").forEach(r=>r.onchange=()=>{
+  const iban=document.querySelector("[name=accFormat]:checked").value==="iban";
+  $("#czAcc").classList.toggle("hidden",iban);$("#ibanAcc").classList.toggle("hidden",!iban);
+});
+
+/* validace rodného čísla */
+function validRC(rc){
+  rc=rc.replace(/\D/g,"");
+  if(rc.length<9||rc.length>10)return false;
+  if(rc.length===10&&(+rc)%11!==0)return false;
+  let m=+rc.substr(2,2);if(m>50)m-=50;if(m>20)m-=20;
+  return m>=1&&m<=12;
+}
+const rcInput=document.querySelector("[name=birthNumber]");
+rcInput.onblur=()=>{
+  const bad=rcInput.value&&!validRC(rcInput.value);
+  rcInput.classList.toggle("invalid",bad);
+  rcInput.parentElement.querySelector(".err-msg").style.display=bad?"block":"none";
+};
+/* RČ → autodoplnění data narození a pohlaví */
+rcInput.oninput=()=>{
+  const rc=rcInput.value.replace(/\D/g,"");
+  if(rc.length>=6){
+    let y=+rc.substr(0,2),m=+rc.substr(2,2),d=+rc.substr(4,2),f=false;
+    if(m>50){m-=50;f=true}if(m>20){m-=20}
+    y+= (rc.length===9? (y<54?1900:1800) : (y<54?2000:1900));
+    if(m>=1&&m<=12&&d>=1&&d<=31){
+      const dob=document.querySelector("[name=dateOfBirth]");
+      if(!dob.value)dob.value=`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const sx=document.querySelector(`[name=sex][value=${f?"woman":"man"}]`);
+      if(!document.querySelector("[name=sex]:checked"))sx.checked=true;
+    }
+  }
+};
+
+/* děti */
+let childN=0;
+$("#addChild").onclick=()=>{
+  childN++;
+  const d=document.createElement("div");d.className="child";
+  d.innerHTML=`<button type="button" class="rm">✕</button>
+    <label>${I18N[lang].c_name}</label><input type="text" name="child_name_${childN}">
+    <label>${I18N[lang].c_rc}</label><input type="text" name="child_rc_${childN}">`;
+  d.querySelector(".rm").onclick=()=>d.remove();
+  $("#children").appendChild(d);
+};
+
+/* file boxy */
+$$(".file-box input").forEach(inp=>{
+  inp.onchange=()=>{
+    const box=inp.closest(".file-box");
+    for(const f of inp.files){
+      if(f.size>CONFIG.maxFileMB*1048576){alert(I18N[lang].e_file);inp.value="";box.classList.remove("has");return;}
+    }
+    box.classList.toggle("has",inp.files.length>0);
+    if(inp.files.length)box.querySelector("span").textContent="✓ "+[...inp.files].map(f=>f.name).join(", ");
+  };
+});
+
+/* progress bar */
+document.addEventListener("input",()=>{
+  const reqs=[...$$("#f [required]")].filter(e=>e.offsetParent!==null||e.type==="radio");
+  const done=reqs.filter(e=>e.type==="checkbox"?e.checked:e.type==="radio"?document.querySelector(`[name=${e.name}]:checked`):e.value).length;
+  $("#pbar").style.width=(reqs.length?Math.round(done/reqs.length*100):0)+"%";
+});
+
+/* soubor → base64 */
+const toB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res({name:f.name,type:f.type,data:r.result.split(",")[1]});r.onerror=rej;r.readAsDataURL(f);});
+
+/* odeslání */
+$("#f").onsubmit=async e=>{
+  e.preventDefault();
+  const form=e.target;
+  let bad=false;
+  [...form.querySelectorAll("[required]")].forEach(el=>{
+    const visible=el.offsetParent!==null||el.type==="radio";
+    const ok=!visible||(el.type==="checkbox"?el.checked:el.type==="radio"?!!form.querySelector(`[name=${el.name}]:checked`):!!el.value.trim());
+    el.classList.toggle("invalid",!ok);if(!ok)bad=true;
+  });
+  if(rcInput.value&&!validRC(rcInput.value)){rcInput.classList.add("invalid");bad=true;}
+  $("#formErr").style.display=bad?"block":"none";
+  if(bad){window.scrollTo({top:document.querySelector(".invalid").getBoundingClientRect().top+scrollY-100,behavior:"smooth"});return;}
+
+  const btn=$("#sbtn");btn.disabled=true;btn.textContent=I18N[lang].b_sending;
+
+  const data={_meta:{klient,lang,submitted:new Date().toISOString(),ua:navigator.userAgent}};
+  new FormData(form).forEach((v,k)=>{if(!(v instanceof File))data[k]=v;});
+  ["taxDeclaration","isStudent","isPensioner","isZTP","hasExecution","otherEmployer"].forEach(k=>data[k]=form[k].checked);
+  data.czAddrSame=$("#czAddrSame").checked;
+  /* děti */
+  data.children=[];
+  $$("#children .child").forEach(c=>{
+    const n=c.querySelector("[name^=child_name]").value,r=c.querySelector("[name^=child_rc]").value;
+    if(n)data.children.push({name:n,birthNumber:r});
+  });
+  /* soubory */
+  data.files=[];
+  for(const inp of $$(".file-box input")){
+    for(const f of inp.files){data.files.push({field:inp.name,...await toB64(f)});}
+  }
+
+  if(CONFIG.scriptUrl){
+    try{
+      const r=await fetch(CONFIG.scriptUrl,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||"server error");
+      $("#f").classList.add("hidden");$("#okScreen").classList.remove("hidden");window.scrollTo(0,0);
+    }catch(err){
+      alert("Chyba odeslání / Помилка / Error: "+err.message);
+      btn.disabled=false;btn.textContent=I18N[lang].b_submit;
+    }
+  }else{
+    /* fallback: stáhnout JSON */
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`dotaznik_${(data.surname||"zamestnanec")}_${(data.firstName||"")}.json`.replace(/\s+/g,"_");
+    a.click();
+    alert(I18N[lang].dl_info);
+    $("#f").classList.add("hidden");$("#okScreen").classList.remove("hidden");window.scrollTo(0,0);
+  }
+};
+
+applyLang("cs");
+updateForeign();
+</script>
+</body>
+</html>
